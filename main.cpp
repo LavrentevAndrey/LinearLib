@@ -25,7 +25,9 @@ int main() {
     B[0] = 0, B[1] = 1, B[2] = 2, B[3] = 1;
     float* C = new float[4];
     gemm_v1(2, 2, 2, A, B, C);
-    Matrix2<float> Am(2, 2, A), Bm(2, 2, B), Cm(Am * Bm);
+    Matrix2<float> Am(2, 2, A), Bm(2, 2, B), Cm(2, 2);
+    Cm = Am * Bm;
+    std::cout << Cm << std::endl;
     int i = 1;
 	return 0;
 }

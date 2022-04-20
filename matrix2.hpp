@@ -1,6 +1,8 @@
 #ifndef MATRIX2_H
 #define MATRIX2_H
 
+#include <iostream>
+
 template <class T>
 class Matrix2 {
 public:
@@ -22,6 +24,10 @@ public:
 
 	// overloads of operators
 	bool operator== (const Matrix2<T>& M);
+	bool operator== (Matrix2<T>&& M);
+
+	Matrix2<T>& operator = (const Matrix2<T>& M);
+	Matrix2<T>& operator = (Matrix2<T>&& M);
 	
 	template <class U> friend Matrix2<U> operator + (const Matrix2<U>& lM, const Matrix2<U>& rM);
 	template <class U> friend Matrix2<U> operator + (const Matrix2<U>& lM, const U& r);
@@ -34,6 +40,8 @@ public:
 	template <class U> friend Matrix2<U> operator * (const Matrix2<U>& lM, const Matrix2<U>& rM);
 	template <class U> friend Matrix2<U> operator * (const Matrix2<U>& lM, const U& r);
 	template <class U> friend Matrix2<U> operator * (const U& l, const Matrix2<U>& rM);
+
+	template <class U> friend std::ostream& operator<< (std::ostream& os, const Matrix2<U>& M);
 
 private:
 	int Pos2Ind(int row, int col);
@@ -82,12 +90,12 @@ Matrix2<T>::Matrix2(int rows, int cols, const T* data) {
 // Matrix from matrix
 template<class T>
 Matrix2<T>::Matrix2(const Matrix2<T>& matrix) {
-	m_rows = matrix.m_rows;
-	m_cols = matrix.m_cols;
-	m_elem = matrix.m_elem;
-	m_data = new T[m_elem];
-	for (int i = 0; i < m_elem; i++) {
-		m_data[i] = matrix.m_data[i];
+	this->m_rows = matrix.m_rows;
+	this->m_cols = matrix.m_cols;
+	this->m_elem = matrix.m_elem;
+	this->m_data = new T[m_elem];
+	for (int i = 0; i < this->m_elem; i++) {
+		this->m_data[i] = matrix.m_data[i];
 	}
 }
 
@@ -107,11 +115,11 @@ bool Matrix2<T>::resize(int rows, int cols) {
 	m_rows = rows;
 	m_cols = cols;
 	m_elem = rows * cols;
-	delete[] m_data;
-	m_data = new T[m_elem];
-	if (m_data != nullptr) {
+	delete[] this->m_data;
+	this->m_data = new T[m_elem];
+	if (this->m_data != nullptr) {
 		for (int i = 0; i < m_elem; i++)
-			m_data[i] = 0.0;
+			this->m_data[i] = 0.0;
 
 		return true;
 	}
@@ -127,7 +135,7 @@ template<class T>
 T Matrix2<T>::get(int row, int col) {
 	int ind = Pos2Ind(row, col);
 	if (ind >= 0)
-		return m_data[ind];
+		return this->m_data[ind];
 	else
 		return 0;
 }
@@ -137,7 +145,7 @@ template<class T>
 bool Matrix2<T>::set(int row, int col, const T value) {
 	int ind = Pos2Ind(row, col);
 	if (ind >= 0) {
-		m_data[ind] = value;
+		this->m_data[ind] = value;
 		return true;
 	}
 	else
@@ -160,6 +168,17 @@ int Matrix2<T>::get_cols() {
 //------------------------------------------------------------------
 
 template<class T>
+std::ostream& operator<< (std::ostream& os, Matrix2<T>& M) {
+	int m = M.get_rows(), n = M.get_cols();
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++)
+			os << M.get(i, j) << " ";
+		os << std::endl;
+	}
+	return os;
+}
+
+template<class T>
 bool Matrix2<T>::operator== (const Matrix2<T>& M) {
 	if (M.m_cols != this->m_cols || M.m_rows != this->m_rows)
 		return false;
@@ -170,6 +189,43 @@ bool Matrix2<T>::operator== (const Matrix2<T>& M) {
 		}
 	}
 	return true;
+}
+
+template<class T>
+bool Matrix2<T>::operator== (Matrix2<T>&& M) {
+	if (M.m_cols != this->m_cols || M.m_rows != this->m_rows)
+		return false;
+
+	for (int i = 0; i < this->m_elem; i++) {
+		if (this->m_data[i] != M.m_data[i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+template<class T>
+Matrix2<T>& Matrix2<T>::operator = (const Matrix2<T>& M) {
+	this->m_cols = M.m_cols;
+	this->m_rows = M.m_rows;
+	this->m_elem = M.m_elem;
+	this->m_data = new T[m_elem];
+	for (int i = 0; i < m_elem; i++) {
+		m_data[i] = M.m_data[i];
+	}
+	return *this;
+}
+
+template<class T>
+Matrix2<T>& Matrix2<T>::operator = (Matrix2<T>&& M) {
+	this->m_cols = M.m_cols;
+	this->m_rows = M.m_rows;
+	this->m_elem = M.m_elem;
+	this->m_data = new T[m_elem];
+	for (int i = 0; i < m_elem; i++) {
+		m_data[i] = M.m_data[i];
+	}
+	return *this;
 }
 
 //------------------------------------------------------------------
