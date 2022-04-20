@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="matrix2_Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="matrix2.hpp" />

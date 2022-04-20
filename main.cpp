@@ -1,4 +1,3 @@
-#include <iostream>
 #include "matrix2.hpp"
 
 void gemm_v1(int M, int N, int K, const float* A, const float* B, float* C)
@@ -19,16 +18,30 @@ void gemm_v1(int M, int N, int K, const float* A, const float* B, float* C)
 }
 
 int main() {
-    float* A = new float[4];
-    A[0] = 1, A[1] = 0, A[2] = 1, A[3] = 1;
-    float* B = new float[4];
-    B[0] = 0, B[1] = 1, B[2] = 2, B[3] = 1;
-    float* C = new float[4];
+    float* A = new float[9];
+    for (int i = 0; i < 9; i++)
+        A[i] = rand() % 30;
+    float* B = new float[9];
+    for (int i = 0; i < 9; i++)
+        B[i] = rand() % 120;
+    float* C = new float[9];
     gemm_v1(2, 2, 2, A, B, C);
-    Matrix2<float> Am(2, 2, A), Bm(2, 2, B), Cm(2, 2);
+    Matrix2<float> Am(3, 3, A), Bm(3, 3, B), Cm(3, 3);
+    std::cout << Am << std::endl << Bm << std::endl;
     Cm = Am * Bm;
+    std::cout << "Matrix multiplication\n";
     std::cout << Cm << std::endl;
-    int i = 1;
+    std::cout << "Matrix multiplication by const\n";
+    Cm = (Am * (float)3);
+    std::cout << Cm << std::endl;
+    std::cout << "Matrix addition\n";
+    Cm = Am + Bm;
+    std::cout << Cm << std::endl;
+    std::cout << "Matrix subtraction\n";
+    Cm = Bm -Am;
+    std::cout << Cm << std::endl;
+    std::cout << "Matrix equality\n";
+    std::cout << (Am == Bm) << "   " << (Am == Am) << std::endl;
 	return 0;
 }
 

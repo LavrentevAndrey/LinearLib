@@ -27,7 +27,6 @@ public:
 	bool operator== (Matrix2<T>&& M);
 
 	Matrix2<T>& operator = (const Matrix2<T>& M);
-	Matrix2<T>& operator = (Matrix2<T>&& M);
 	
 	template <class U> friend Matrix2<U> operator + (const Matrix2<U>& lM, const Matrix2<U>& rM);
 	template <class U> friend Matrix2<U> operator + (const Matrix2<U>& lM, const U& r);
@@ -216,18 +215,6 @@ Matrix2<T>& Matrix2<T>::operator = (const Matrix2<T>& M) {
 	return *this;
 }
 
-template<class T>
-Matrix2<T>& Matrix2<T>::operator = (Matrix2<T>&& M) {
-	this->m_cols = M.m_cols;
-	this->m_rows = M.m_rows;
-	this->m_elem = M.m_elem;
-	this->m_data = new T[m_elem];
-	for (int i = 0; i < m_elem; i++) {
-		m_data[i] = M.m_data[i];
-	}
-	return *this;
-}
-
 //------------------------------------------------------------------
 //------------------------------------------------------------------
 
@@ -235,7 +222,7 @@ template <class T>
 Matrix2<T> operator+ (const Matrix2<T>& lM, const Matrix2<T>& rM) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
-		tmp[i] = lM[i] + rM[i];
+		tmp[i] = lM.m_data[i] + rM.m_data[i];
 
 	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
@@ -246,7 +233,7 @@ template <class T>
 Matrix2<T> operator+ (const Matrix2<T>& lM, const T& r) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
-		tmp[i] = lM[i] + r;
+		tmp[i] = lM.m_data[i] + r;
 
 	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
@@ -257,7 +244,7 @@ template <class T>
 Matrix2<T> operator+ (const T& l, const Matrix2<T>& rM) {
 	T* tmp = new T[rM.m_elem];
 	for (int i = 0; i < rM.m_elem; i++)
-		tmp[i] = rM[i] + l;
+		tmp[i] = rM.m_data[i] + l;
 
 	Matrix2<T> res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
@@ -271,7 +258,7 @@ template <class T>
 Matrix2<T> operator- (const Matrix2<T>& lM, const Matrix2<T>& rM) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
-		tmp[i] = lM[i] - rM[i];
+		tmp[i] = lM.m_data[i] - rM.m_data[i];
 
 	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
@@ -282,7 +269,7 @@ template <class T>
 Matrix2<T> operator- (const Matrix2<T>& lM, const T& r) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
-		tmp[i] = lM[i] - r;
+		tmp[i] = lM.m_data[i] - r;
 
 	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
@@ -293,7 +280,7 @@ template <class T>
 Matrix2<T> operator- (const T& l, const Matrix2<T>& rM) {
 	T* tmp = new T[rM.m_elem];
 	for (int i = 0; i < rM.m_elem; i++)
-		tmp[i] = l - rM[i];
+		tmp[i] = l - rM.m_data[i];
 
 	Matrix2<T> res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
@@ -307,7 +294,7 @@ template <class T>
 Matrix2<T> operator* (const Matrix2<T>& lM, const T& r) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
-		tmp[i] = lM[i] * r;
+		tmp[i] = lM.m_data[i] * r;
 
 	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
@@ -318,7 +305,7 @@ template <class T>
 Matrix2<T> operator* (const T& l, const Matrix2<T>& rM) {
 	T* tmp = new T[rM.m_elem];
 	for (int i = 0; i < rM.m_elem; i++)
-		tmp[i] = l * rM[i];
+		tmp[i] = l * rM.m_data[i];
 
 	Matrix2<T> res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
