@@ -438,7 +438,7 @@ bool Matrix2<T>::join(const Matrix2<T>& M) {
 			if (j < cols1)
 				M_data[ind] = this->m_data[i * cols1 + j];
 			else
-				M_data[ind] = M.m_data[i * cols1 + j]; // здесь говно какое-то
+				M_data[ind] = M.m_data[i * cols1 + j];
 		}
 	}
 
