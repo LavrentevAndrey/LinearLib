@@ -427,9 +427,6 @@ bool Matrix2<T>::join(const Matrix2<T>& M) {
 	if (M.m_rows != this->m_rows)
 		throw std::invalid_argument("Attemp to join two unequal in rows matrices!");
 	int rows = M.m_rows;
-	
-
-	this->print();
 
 	T* M_data = new T[rows * cols];
 	for (int i = 0; i < rows; i++) {
@@ -438,23 +435,14 @@ bool Matrix2<T>::join(const Matrix2<T>& M) {
 			if (j < cols1)
 				M_data[ind] = this->m_data[i * cols1 + j];
 			else
-				M_data[ind] = M.m_data[i * cols1 + j]; // здесь говно какое-то
+				M_data[ind] = M.m_data[i * cols1 + j - 3];
 		}
 	}
-
-	Matrix2<T> A(3, 6, M_data);
-	std::cout << A;
 
 	m_elem = cols * rows;
 	m_cols = cols;
 	delete[] m_data;
-	
-	m_data = new T[m_elem];
-	for (int i = 0; i < m_elem; i++)
-		m_data[i] = M_data[i];
-	//m_data = M_data;
-
-	this->print();
+	m_data = M_data;
 
 	return true;
 }
@@ -525,7 +513,7 @@ template<class T>
 inline void Matrix2<T>::print() {
 	for (int i = 0; i < m_rows; i++) {
 		for (int j = 0; j < m_cols; j++)
-			std::cout << this->get(i, j) << " ";
+			std::cout << std::fixed << std::setprecision(3) << std::setw(6) << this->get(i, j) << " ";
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
@@ -551,7 +539,7 @@ bool Matrix2<T>::inverse() {
 	int count = 0;
 	int maxIter = 100;
 	bool flag = false, out = false;
-	while (count < maxIter || flag == false) {
+	while (count < maxIter && flag == false) {
 		for (int diagIndex = 0; diagIndex < m_rows; diagIndex++) {
 			cRow = diagIndex;
 			cCol = diagIndex;
@@ -559,12 +547,14 @@ bool Matrix2<T>::inverse() {
 			rowWithMaxElem = this->find_row_with_max_element(cCol, cRow);
 			if (rowWithMaxElem != cRow) {
 				this->swap_row(rowWithMaxElem, cRow);
-				//std::cout << "Swap rows: " << cRow << " and " << rowWithMaxElem << std::endl;
+				std::cout << "Swap rows: " << cRow << " and " << rowWithMaxElem << std::endl;
 			}
 
 			T cValue = m_data[cRow * m_cols + cCol];
 			if (cValue != 1.0)
 				this->mult_row(cRow, (T)1 / cValue);
+
+			this->print();
 
 			for (int i = cRow + 1; i < m_rows; i++) {
 				if (!close_enough(m_data[i * m_cols + cCol], 0.0)) {
@@ -574,11 +564,17 @@ bool Matrix2<T>::inverse() {
 
 					if (!close_enough(rowOneValue, 0.0)) {
 						T correction = -(m_data[i * m_cols + cCol] / rowOneValue);
+
+						std::cout << "Multiply row: " << rowOneIndex << " by " << m_data[i * m_cols + cCol] << " and add to row " << i << std::endl;
+
 						this->mult_add_row(i, rowOneIndex, correction);
-						//std::cout << "Multiply row: " << rowOneIndex << " by " << m_data[i * m_cols + cCol] << " and add to row " << i << std::endl;
+
+						this->print();
 					}
 				}
 			}
+
+			this->print();
 
 			for (int i = cCol + 1; i < cols; i++) {
 				if (!close_enough(m_data[cRow * m_cols + i], 0.0)) {
@@ -588,16 +584,22 @@ bool Matrix2<T>::inverse() {
 
 					if (!close_enough(rowOneValue, 0.0)) {
 						T correction = -(m_data[cRow * m_cols + i] / rowOneValue);
+
+						std::cout << "Multiply row: " << rowOneIndex << " by " << m_data[i * m_cols + cCol] << " and add to row " << cRow << std::endl;
+
 						this->mult_add_row(cRow, rowOneIndex, correction);
-						//std::cout << "Multiply row: " << rowOneIndex << " by " << m_data[i * m_cols + cCol] << " and add to row " << cRow << std::endl;
+
+						this->print();
 					}
 				}
 			}
 
+			this->print();
+
 			flag = true;
 			for (int i = 0; i < m_rows; i++) {
 				for (int j = 0; j < cols; j++) {
-					if (!(m_data[i * m_cols + j] == 0 && i != j || i == j && m_data[i * m_cols + j] == 1)) {
+					if ((!close_enough(m_data[i * m_cols + j], 0.0) || i == j) && (i != j || m_data[i * m_cols + j] != 1)) {
 						flag = false;
 					}
 				}
@@ -616,6 +618,7 @@ bool Matrix2<T>::inverse() {
 				m_data = new T[m_elem];
 				for (int i = 0; i < m_elem; i++)
 					m_data[i] = L[i];
+				break;
 			}
 		}
 		count++;
