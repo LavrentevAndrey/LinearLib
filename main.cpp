@@ -1,6 +1,6 @@
 #include "matrix2.hpp"
 
-int main() {
+void test1() {
     double* A = new double[9];
     for (int i = 0; i < 9; i++)
         A[i] = (double)(rand() % 30);
@@ -23,7 +23,7 @@ int main() {
     Cm = Am + Bm;
     std::cout << Cm << std::endl;
     std::cout << "Matrix subtraction\n";
-    Cm = Bm -Am;
+    Cm = Bm - Am;
     std::cout << Cm << std::endl;
     std::cout << "Matrix equality\n";
     std::cout << (Am == Bm) << "   " << (Am == Am) << std::endl;
@@ -42,7 +42,20 @@ int main() {
     Cm = Am * Bm;
     std::cout << "Not square matrix multiplication\n";
     std::cout << Cm << std::endl;
-    
+}
+
+void test2() {
+    double* A = new double[9];
+    for (int i = 0; i < 9; i++)
+        A[i] = (double)(rand() % 30);
+    Matrix2<double> Am(3, 3, A);
+
+    std::cout << Am << std::endl << "Correct answer: " << Am.LU_determinant() << std::endl;
+    std::cout << "Rec answ: " << Am.determinant(Am) << std::endl;
+}
+
+int main() {
+    test2();
 	return 0;
 }
 

@@ -52,6 +52,10 @@ public:
 	// computing inverse matrix
 	bool inverse();
 
+	// computing determinant
+	T determinant(Matrix2<T> M);
+	T LU_determinant();
+
 private:
 	inline int pos_to_ind(int row, int col);
 	inline bool is_square();
@@ -624,6 +628,73 @@ bool Matrix2<T>::inverse() {
 		count++;
 	}
 	return out;
+}
+
+template<class T>
+T Matrix2<T>::determinant(Matrix2<T> M) {
+	if (M.m_cols == 2)
+		return M.m_data[0] * M.m_data[3] - M.m_data[1] * M.m_data[2];
+	int cols = M.m_cols, rowSmal, row;
+	T sum = 0;
+	T* tmp;
+	tmp = new T[(cols - 1) * (cols - 1)];
+	
+	for (int i = 0; i < cols; i++) {
+
+		// submatrix array
+		for (int j = 1; j < cols; j++) {
+			rowSmal = (j - 1) * (cols - 1);
+			row = j * cols;
+			for (int k = 0; k < i; k++)
+				tmp[rowSmal + k] = M.m_data[row + k];
+			for (int k = i + 1; k < cols; k++) {
+				tmp[rowSmal + k - 1] = M.m_data[row + k];
+			}
+		}
+
+		Matrix2<T> subMatrix(cols - 1, cols - 1, tmp);
+		if (i % 2 == 0) 
+			sum += M.m_data[i] * determinant(subMatrix);
+		else
+			sum -= M.m_data[i] * determinant(subMatrix);
+	}
+
+	if (cols == 1)
+		return M.m_data[0];
+	return sum;
+}
+
+template<class T>
+T Matrix2<T>::LU_determinant() {
+	if (!this->is_square())
+		throw std::invalid_argument("Can't invert not square matrix!");
+
+	int n = m_cols;
+	std::vector<std::vector<T>> L(n, std::vector<double>(n)), U(n, std::vector<double>(n));
+
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < n; j++)
+			U[i][j] = m_data[i * n + j];
+
+	for (int i = 0; i < n; i++)
+		for (int j = i; j < n; j++)
+			L[j][i] = U[j][i] / U[i][i];
+
+	for (int k = 1; k < n; k++)
+	{
+		for (int i = k - 1; i < n; i++)
+			for (int j = i; j < n; j++)
+				L[j][i] = U[j][i] / U[i][i];
+
+		for (int i = k; i < n; i++)
+			for (int j = k - 1; j < n; j++)
+				U[i][j] = U[i][j] - L[i][k - 1] * U[k - 1][j];
+	}
+
+	T det = 1.0;
+	for (int i = 0; i < n; i++)
+		det *= U[i][i];
+	return det;
 }
 
 #endif
