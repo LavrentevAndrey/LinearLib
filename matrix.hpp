@@ -1,5 +1,5 @@
-#ifndef MATRIX2_H
-#define MATRIX2_H
+#ifndef MATRIX_H
+#define MATRIX_H
 
 #include <iostream>
 #include <stdexcept>
@@ -8,15 +8,15 @@
 #include <vector>
 
 template <class T>
-class Matrix2 {
+class matrix_t {
 public:
-	Matrix2();
-	Matrix2(int rows, int cols);
-	Matrix2(int rows, int cols, const T* data);
-	Matrix2(const Matrix2<T>& matrix);
-	Matrix2(int rows, int cols, const std::vector<T>* inputData);
+	matrix_t();
+	matrix_t(int rows, int cols);
+	matrix_t(int rows, int cols, const T* data);
+	matrix_t(const matrix_t& matrix);
+	matrix_t(int rows, int cols, const std::vector<T>* inputData);
 
-	~Matrix2();
+	~matrix_t();
 
 	// configuration methods
 	bool resize(int rows, int cols);
@@ -29,31 +29,31 @@ public:
 	int get_cols();
 
 	// overloads of operators
-	bool operator== (const Matrix2<T>& M);
-	bool operator== (Matrix2<T>&& M);
-	bool compare(const Matrix2<T>&& M, double tolerance);
+	bool operator== (const matrix_t<T>& M);
+	bool operator== (matrix_t<T>&& M);
+	bool compare(const matrix_t&& M, double tolerance);
 
-	Matrix2<T>& operator = (const Matrix2<T>& M);
+	matrix_t& operator = (const matrix_t& M);
 	
-	template <class U> friend Matrix2<U> operator + (const Matrix2<U>& lM, const Matrix2<U>& rM);
-	template <class U> friend Matrix2<U> operator + (const Matrix2<U>& lM, const U& r);
-	template <class U> friend Matrix2<U> operator + (const U& l, const Matrix2<U>&rM);
+	template <class U> friend matrix_t<U> operator + (const matrix_t<U>& lM, const matrix_t<U>& rM);
+	template <class U> friend matrix_t<U> operator + (const matrix_t<U>& lM, const U& r);
+	template <class U> friend matrix_t<U> operator + (const U& l, const matrix_t<U>&rM);
 
-	template <class U> friend Matrix2<U> operator - (const Matrix2<U>& lM, const Matrix2<U>& rM);
-	template <class U> friend Matrix2<U> operator - (const Matrix2<U>& lM, const U& r);
-	template <class U> friend Matrix2<U> operator - (const U& l, const Matrix2<U>& rM);
+	template <class U> friend matrix_t<U> operator - (const matrix_t<U>& lM, const matrix_t<U>& rM);
+	template <class U> friend matrix_t<U> operator - (const matrix_t<U>& lM, const U& r);
+	template <class U> friend matrix_t<U> operator - (const U& l, const matrix_t<U>& rM);
 
-	template <class U> friend Matrix2<U> operator * (const Matrix2<U>& lM, const Matrix2<U>& rM);
-	template <class U> friend Matrix2<U> operator * (const Matrix2<U>& lM, const U& r);
-	template <class U> friend Matrix2<U> operator * (const U& l, const Matrix2<U>& rM);
+	template <class U> friend matrix_t<U> operator * (const matrix_t<U>& lM, const matrix_t<U>& rM);
+	template <class U> friend matrix_t<U> operator * (const matrix_t<U>& lM, const U& r);
+	template <class U> friend matrix_t<U> operator * (const U& l, const matrix_t<U>& rM);
 
-	template <class U> friend std::ostream& operator<< (std::ostream& os, const Matrix2<U>& M);
+	template <class U> friend std::ostream& operator<< (std::ostream& os, const matrix_t<U>& M);
 
 	// computing inverse matrix
 	bool inverse();
 
 	// computing determinant
-	T determinant(Matrix2<T> M);
+	T determinant(matrix_t M);
 	T LU_determinant();
 
 private:
@@ -63,8 +63,8 @@ private:
 	inline void mult_row(int i, T coef); // i = i * coef
 	inline void mult_add_row(int i, int j, T coef); // i = i + j * coef
 	inline void swap_row(int i, int j);
-	bool separate(Matrix2<T>* M1, Matrix2<T>* M2, int col);
-	bool join(const Matrix2<T>& M);
+	bool separate(matrix_t* M1, matrix_t* M2, int col);
+	bool join(const matrix_t& M);
 	inline int find_row_with_max_element(int col, int start_row);
 	inline void print();
 
@@ -77,7 +77,7 @@ private:
 
 // Default constructor
 template<class T>
-Matrix2<T>::Matrix2() {
+matrix_t<T>::matrix_t() {
 	m_rows = 1;
 	m_cols = 1;
 	m_elem = 1;
@@ -87,7 +87,7 @@ Matrix2<T>::Matrix2() {
 
 // Empty MxN matrix
 template<class T>
-Matrix2<T>::Matrix2(int rows, int cols) {
+matrix_t<T>::matrix_t(int rows, int cols) {
 	m_rows = rows;
 	m_cols = cols;
 	m_elem = rows * cols;
@@ -99,7 +99,7 @@ Matrix2<T>::Matrix2(int rows, int cols) {
 
 // Matrix from array
 template<class T>
-Matrix2<T>::Matrix2(int rows, int cols, const T* data) {
+matrix_t<T>::matrix_t(int rows, int cols, const T* data) {
 	m_rows = rows;
 	m_cols = cols;
 	m_elem = rows * cols;
@@ -111,7 +111,7 @@ Matrix2<T>::Matrix2(int rows, int cols, const T* data) {
 
 // Matrix from matrix
 template<class T>
-Matrix2<T>::Matrix2(const Matrix2<T>& matrix) {
+matrix_t<T>::matrix_t(const matrix_t& matrix) {
 	m_rows = matrix.m_rows;
 	m_cols = matrix.m_cols;
 	m_elem = matrix.m_elem;
@@ -123,7 +123,7 @@ Matrix2<T>::Matrix2(const Matrix2<T>& matrix) {
 
 // IHAAA VECTORS!!!
 template<class T>
-Matrix2<T>::Matrix2(int rows, int cols, const std::vector<T>*  data) {
+matrix_t<T>::matrix_t(int rows, int cols, const std::vector<T>*  data) {
 	//assert(data->size() >= cols * rows); // hmm the exception is asking for... but is it so nessesary?
 	m_rows = rows;
 	m_cols = cols;
@@ -136,7 +136,7 @@ Matrix2<T>::Matrix2(int rows, int cols, const std::vector<T>*  data) {
 
 // KILL 'EM ALL!!!
 template<class T>
-Matrix2<T>::~Matrix2() {
+matrix_t<T>::~matrix_t() {
 	if (m_data != nullptr)
 		delete[] m_data;
 }
@@ -146,7 +146,7 @@ Matrix2<T>::~Matrix2() {
 
 // Configuration
 template<class T>
-bool Matrix2<T>::resize(int rows, int cols) {
+bool matrix_t<T>::resize(int rows, int cols) {
 	m_rows = rows;
 	m_cols = cols;
 	m_elem = rows * cols;
@@ -162,7 +162,7 @@ bool Matrix2<T>::resize(int rows, int cols) {
 		return false;
 }
 template<class T>
-void Matrix2<T>::set_to_identity() {
+void matrix_t<T>::set_to_identity() {
 	if (!this->is_square())
 		throw std::invalid_argument("Cannot form an identity matrix that is not square!");
 	for (int i = 0; i < m_rows; i++) {
@@ -180,14 +180,14 @@ void Matrix2<T>::set_to_identity() {
 
 // Get value by position
 template<class T>
-T Matrix2<T>::get(int row, int col) {
+T matrix_t<T>::get(int row, int col) {
 	int ind = pos_to_ind(row, col);
 	return (ind >= 0) ? this->m_data[ind] : throw std::invalid_argument("No such index in matrix");
 }
 
 // Put value in matrix by index
 template<class T>
-bool Matrix2<T>::set(int row, int col, const T value) {
+bool matrix_t<T>::set(int row, int col, const T value) {
 	int ind = pos_to_ind(row, col);
 	if (ind >= 0) {
 		this->m_data[ind] = value;
@@ -199,13 +199,13 @@ bool Matrix2<T>::set(int row, int col, const T value) {
 
 // How rude, it is not permissible to deal in this form (Give me this, give me that)
 template<class T>
-int Matrix2<T>::get_rows() {
+int matrix_t<T>::get_rows() {
 	return m_rows;
 }
 
 // This is rude too
 template<class T>
-int Matrix2<T>::get_cols() {
+int matrix_t<T>::get_cols() {
 	return m_cols;
 }
 
@@ -213,7 +213,7 @@ int Matrix2<T>::get_cols() {
 //------------------------------------------------------------------
 
 template<class T>
-std::ostream& operator<< (std::ostream& os, Matrix2<T>& M) {
+std::ostream& operator<< (std::ostream& os, matrix_t<T>& M) {
 	int m = M.get_rows(), n = M.get_cols();
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++)
@@ -225,7 +225,7 @@ std::ostream& operator<< (std::ostream& os, Matrix2<T>& M) {
 }
 
 template<class T>
-bool Matrix2<T>::operator== (const Matrix2<T>& M) {
+bool matrix_t<T>::operator== (const matrix_t<T>& M) {
 	if (M.m_cols != this->m_cols || M.m_rows != this->m_rows)
 		return false;
 
@@ -238,7 +238,7 @@ bool Matrix2<T>::operator== (const Matrix2<T>& M) {
 }
 
 template<class T>
-bool Matrix2<T>::operator== (Matrix2<T>&& M) {
+bool matrix_t<T>::operator== (matrix_t<T>&& M) {
 	if (M.m_cols != this->m_cols || M.m_rows != this->m_rows)
 		return false;
 	
@@ -251,7 +251,7 @@ bool Matrix2<T>::operator== (Matrix2<T>&& M) {
 }
 
 template<class T>
-bool compare(const Matrix2<T> M, double coef) {
+bool compare(const matrix_t<T> M, double coef) {
 	if (M.m_cols != this->m_cols || M.m_rows != this->m_rows)
 		return false;
 
@@ -267,7 +267,7 @@ bool compare(const Matrix2<T> M, double coef) {
 }
 
 template<class T>
-Matrix2<T>& Matrix2<T>::operator = (const Matrix2<T>& M) {
+matrix_t<T>& matrix_t<T>::operator = (const matrix_t<T>& M) {
 	this->m_cols = M.m_cols;
 	this->m_rows = M.m_rows;
 	this->m_elem = M.m_elem;
@@ -282,34 +282,34 @@ Matrix2<T>& Matrix2<T>::operator = (const Matrix2<T>& M) {
 //------------------------------------------------------------------
 
 template <class T>
-Matrix2<T> operator+ (const Matrix2<T>& lM, const Matrix2<T>& rM) {
+matrix_t<T> operator+ (const matrix_t<T>& lM, const matrix_t<T>& rM) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
 		tmp[i] = lM.m_data[i] + rM.m_data[i];
 
-	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
+	matrix_t<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
 
 template <class T>
-Matrix2<T> operator+ (const Matrix2<T>& lM, const T& r) {
+matrix_t<T> operator+ (const matrix_t<T>& lM, const T& r) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
 		tmp[i] = lM.m_data[i] + r;
 
-	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
+	matrix_t res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
 
 template <class T>
-Matrix2<T> operator+ (const T& l, const Matrix2<T>& rM) {
+matrix_t<T> operator+ (const T& l, const matrix_t<T>& rM) {
 	T* tmp = new T[rM.m_elem];
 	for (int i = 0; i < rM.m_elem; i++)
 		tmp[i] = rM.m_data[i] + l;
 
-	Matrix2<T> res(rM.m_rows, rM.m_cols, tmp);
+	matrix_t res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
@@ -318,34 +318,34 @@ Matrix2<T> operator+ (const T& l, const Matrix2<T>& rM) {
 //------------------------------------------------------------------
 
 template <class T>
-Matrix2<T> operator- (const Matrix2<T>& lM, const Matrix2<T>& rM) {
+matrix_t<T> operator- (const matrix_t<T>& lM, const matrix_t<T>& rM) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
 		tmp[i] = lM.m_data[i] - rM.m_data[i];
 
-	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
+	matrix_t<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
 
 template <class T>
-Matrix2<T> operator- (const Matrix2<T>& lM, const T& r) {
+matrix_t<T> operator- (const matrix_t<T>& lM, const T& r) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
 		tmp[i] = lM.m_data[i] - r;
 
-	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
+	matrix_t res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
 
 template <class T>
-Matrix2<T> operator- (const T& l, const Matrix2<T>& rM) {
+matrix_t<T> operator- (const T& l, const matrix_t<T>& rM) {
 	T* tmp = new T[rM.m_elem];
 	for (int i = 0; i < rM.m_elem; i++)
 		tmp[i] = l - rM.m_data[i];
 
-	Matrix2<T> res(rM.m_rows, rM.m_cols, tmp);
+	matrix_t res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
@@ -354,30 +354,30 @@ Matrix2<T> operator- (const T& l, const Matrix2<T>& rM) {
 //------------------------------------------------------------------
 
 template <class T>
-Matrix2<T> operator* (const Matrix2<T>& lM, const T& r) {
+matrix_t<T> operator* (const matrix_t<T>& lM, const T& r) {
 	T* tmp = new T[lM.m_elem];
 	for (int i = 0; i < lM.m_elem; i++)
 		tmp[i] = lM.m_data[i] * r;
 
-	Matrix2<T> res(lM.m_rows, lM.m_cols, tmp);
+	matrix_t<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
 
 template <class T>
-Matrix2<T> operator* (const T& l, const Matrix2<T>& rM) {
+matrix_t<T> operator* (const T& l, const matrix_t<T>& rM) {
 	T* tmp = new T[rM.m_elem];
 	for (int i = 0; i < rM.m_elem; i++)
 		tmp[i] = l * rM.m_data[i];
 
-	Matrix2<T> res(rM.m_rows, rM.m_cols, tmp);
+	matrix_t res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
 
 template <class T>
-Matrix2<T> operator* (const Matrix2<T>& lM, const Matrix2<T>& rM) {
-	// if (lM.m_cols != rM.m_rows) std::cout << "Matrix2 size multimplication error" << std::endl;
+matrix_t<T> operator* (const matrix_t<T>& lM, const matrix_t<T>& rM) {
+	// if (lM.m_cols != rM.m_rows) std::cout << "matrix_t size multimplication error" << std::endl;
 	int M = lM.m_rows, N = rM.m_cols, K = lM.m_cols;
 	T* tmp = new T[M * N];
 	for (int i = 0; i < M; i++) {
@@ -391,7 +391,7 @@ Matrix2<T> operator* (const Matrix2<T>& lM, const Matrix2<T>& rM) {
 				c[j] += a * b[j];
 		}
 	}
-	Matrix2<T> res(M, N, tmp);
+	matrix_t<T> res(M, N, tmp);
 	delete[] tmp;
 	return res;
 }
@@ -403,7 +403,7 @@ Matrix2<T> operator* (const Matrix2<T>& lM, const Matrix2<T>& rM) {
 
 // Separating two matrices with slicing them by a column number
 template<class T>
-bool Matrix2<T>::separate(Matrix2<T>* M1, Matrix2<T>* M2, int col) {
+bool matrix_t<T>::separate(matrix_t<T>* M1, matrix_t<T>* M2, int col) {
 	int rows = this->m_rows;
 	int cols = this->m_rows;
 	if (col <= 0 || col >= cols)
@@ -424,7 +424,7 @@ bool Matrix2<T>::separate(Matrix2<T>* M1, Matrix2<T>* M2, int col) {
 
 // Joining two matrices in one by columns
 template<class T>
-bool Matrix2<T>::join(const Matrix2<T>& M) {
+bool matrix_t<T>::join(const matrix_t<T>& M) {
 	int cols1 = m_cols;
 	int cols = this->m_cols + M.m_cols;
 	
@@ -453,22 +453,22 @@ bool Matrix2<T>::join(const Matrix2<T>& M) {
 
 // Translate ij position in matrix into index of array
 template<class T>
-inline int Matrix2<T>::pos_to_ind(int row, int col) {
+inline int matrix_t<T>::pos_to_ind(int row, int col) {
 	return (row < m_rows && row >= 0 && col < m_cols && col >= 0) ? row * m_cols + col : -1;
 }
 
 template<class T>
-inline bool Matrix2<T>::close_enough(T n1, T n2) {
+inline bool matrix_t<T>::close_enough(T n1, T n2) {
 	return fabs(n1 - n2) < 1e-9;
 }
 
 template<class T>
-inline bool Matrix2<T>::is_square() {
+inline bool matrix_t<T>::is_square() {
 	return m_cols == m_rows ? true : false;
 }
 
 template<class T>
-inline void Matrix2<T>::swap_row(int i, int j) {
+inline void matrix_t<T>::swap_row(int i, int j) {
 	T tmp;
 	T* I = m_data + i * m_cols;
 	T* J = m_data + j * m_cols;
@@ -481,7 +481,7 @@ inline void Matrix2<T>::swap_row(int i, int j) {
 }
 
 template<class T>
-inline void Matrix2<T>::mult_add_row(int i, int j, T coef) {
+inline void matrix_t<T>::mult_add_row(int i, int j, T coef) {
 	T* I = m_data + i * m_cols;
 	T* J = m_data + j * m_cols;
 
@@ -491,7 +491,7 @@ inline void Matrix2<T>::mult_add_row(int i, int j, T coef) {
 }
 
 template<class T>
-inline int Matrix2<T>::find_row_with_max_element(int col, int start_row) {
+inline int matrix_t<T>::find_row_with_max_element(int col, int start_row) {
 	T max = m_data[0];
 	int row = 0, ind;
 	
@@ -507,14 +507,14 @@ inline int Matrix2<T>::find_row_with_max_element(int col, int start_row) {
 }
 
 template<class T>
-inline void Matrix2<T>::mult_row(int i, T coef) {
+inline void matrix_t<T>::mult_row(int i, T coef) {
 	T* I = m_data + i * m_cols;
 	for (int k = 0; k < m_cols; k++)
 		I[k] *= coef;
 }
 
 template<class T>
-inline void Matrix2<T>::print() {
+inline void matrix_t<T>::print() {
 	for (int i = 0; i < m_rows; i++) {
 		for (int j = 0; j < m_cols; j++)
 			std::cout << std::fixed << std::setprecision(3) << std::setw(6) << this->get(i, j) << " ";
@@ -527,11 +527,11 @@ inline void Matrix2<T>::print() {
 //------------------------------------------------------------------
 
 template<class T>
-bool Matrix2<T>::inverse() {
+bool matrix_t<T>::inverse() {
 	if (!this->is_square())
 		throw std::invalid_argument("Can't invert not square matrix!");
 																												
-	Matrix2<T> Ident(m_rows, m_cols);
+	matrix_t Ident(m_rows, m_cols);
 	Ident.set_to_identity();																												
 	int cols = m_cols;
 	join(Ident);
@@ -615,6 +615,7 @@ bool Matrix2<T>::inverse() {
 				for (int i = 0; i < m_rows; i++)
 					for (int j = 0; j < cols; j++)
 						L[i * cols + j] = m_data[i * m_cols + cols + j];
+				delete[] L;
 
 				m_cols = cols;
 				m_elem = cols * m_rows;
@@ -631,7 +632,7 @@ bool Matrix2<T>::inverse() {
 }
 
 template<class T>
-T Matrix2<T>::determinant(Matrix2<T> M) {
+T matrix_t<T>::determinant(matrix_t M) {
 	if (M.m_cols == 2)
 		return M.m_data[0] * M.m_data[3] - M.m_data[1] * M.m_data[2];
 	int cols = M.m_cols, rowSmal, row;
@@ -652,12 +653,14 @@ T Matrix2<T>::determinant(Matrix2<T> M) {
 			}
 		}
 
-		Matrix2<T> subMatrix(cols - 1, cols - 1, tmp);
+		matrix_t subMatrix(cols - 1, cols - 1, tmp);
 		if (i % 2 == 0) 
 			sum += M.m_data[i] * determinant(subMatrix);
 		else
 			sum -= M.m_data[i] * determinant(subMatrix);
 	}
+
+	delete[] tmp;
 
 	if (cols == 1)
 		return M.m_data[0];
@@ -665,7 +668,7 @@ T Matrix2<T>::determinant(Matrix2<T> M) {
 }
 
 template<class T>
-T Matrix2<T>::LU_determinant() {
+T matrix_t<T>::LU_determinant() {
 	if (!this->is_square())
 		throw std::invalid_argument("Can't invert not square matrix!");
 
