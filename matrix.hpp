@@ -16,22 +16,23 @@ public:
 	matrix_t(const matrix_t& matrix);
 	matrix_t(int rows, int cols, const std::vector<T>* inputData);
 
-	~matrix_t();
+	virtual ~matrix_t();
 
 	// configuration methods
 	bool resize(int rows, int cols);
 	void set_to_identity();
 
 	// get/set methods
-	inline T get(int row, int col);
+	inline T get(int row, int col) const;
 	inline bool set(int row, int col, const T value);
-	int get_rows();
-	int get_cols();
+	inline int get_rows() const;
+	inline int get_cols() const;
+	inline T* get_pointer() const;
 
 	// overloads of operators
 	bool operator== (const matrix_t<T>& M);
 	bool operator== (matrix_t<T>&& M);
-	bool compare(const matrix_t&& M, double tolerance);
+	bool compare(const matrix_t& M, double tolerance);
 
 	matrix_t& operator = (const matrix_t& M);
 	
@@ -47,6 +48,7 @@ public:
 	template <class U> friend matrix_t<U> operator * (const matrix_t<U>& lM, const U& r);
 	template <class U> friend matrix_t<U> operator * (const U& l, const matrix_t<U>& rM);
 
+
 	template <class U> friend std::ostream& operator<< (std::ostream& os, const matrix_t<U>& M);
 
 	// computing inverse matrix
@@ -57,7 +59,7 @@ public:
 	T LU_determinant();
 
 private:
-	inline int pos_to_ind(int row, int col);
+	inline int pos_to_ind(int row, int col) const;
 	inline bool is_square();
 	inline bool close_enough(T n1, T n2);
 	inline void mult_row(int i, T coef); // i = i * coef
@@ -180,7 +182,7 @@ void matrix_t<T>::set_to_identity() {
 
 // Get value by position
 template<class T>
-T matrix_t<T>::get(int row, int col) {
+T matrix_t<T>::get(int row, int col) const {
 	int ind = pos_to_ind(row, col);
 	return (ind >= 0) ? this->m_data[ind] : throw std::invalid_argument("No such index in matrix");
 }
@@ -199,14 +201,19 @@ bool matrix_t<T>::set(int row, int col, const T value) {
 
 // How rude, it is not permissible to deal in this form (Give me this, give me that)
 template<class T>
-int matrix_t<T>::get_rows() {
+int matrix_t<T>::get_rows() const {
 	return m_rows;
 }
 
 // This is rude too
 template<class T>
-int matrix_t<T>::get_cols() {
+int matrix_t<T>::get_cols() const {
 	return m_cols;
+}
+
+template<class T>
+T* matrix_t<T>::get_pointer() const {
+	return m_data;
 }
 
 //------------------------------------------------------------------
@@ -251,7 +258,7 @@ bool matrix_t<T>::operator== (matrix_t<T>&& M) {
 }
 
 template<class T>
-bool compare(const matrix_t<T> M, double coef) {
+bool matrix_t<T>::compare(const matrix_t<T> &M, double coef) {
 	if (M.m_cols != this->m_cols || M.m_rows != this->m_rows)
 		return false;
 
@@ -298,7 +305,7 @@ matrix_t<T> operator+ (const matrix_t<T>& lM, const T& r) {
 	for (int i = 0; i < lM.m_elem; i++)
 		tmp[i] = lM.m_data[i] + r;
 
-	matrix_t res(lM.m_rows, lM.m_cols, tmp);
+	matrix_t<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
@@ -309,7 +316,7 @@ matrix_t<T> operator+ (const T& l, const matrix_t<T>& rM) {
 	for (int i = 0; i < rM.m_elem; i++)
 		tmp[i] = rM.m_data[i] + l;
 
-	matrix_t res(rM.m_rows, rM.m_cols, tmp);
+	matrix_t<T> res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
@@ -334,7 +341,7 @@ matrix_t<T> operator- (const matrix_t<T>& lM, const T& r) {
 	for (int i = 0; i < lM.m_elem; i++)
 		tmp[i] = lM.m_data[i] - r;
 
-	matrix_t res(lM.m_rows, lM.m_cols, tmp);
+	matrix_t<T> res(lM.m_rows, lM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
@@ -345,7 +352,7 @@ matrix_t<T> operator- (const T& l, const matrix_t<T>& rM) {
 	for (int i = 0; i < rM.m_elem; i++)
 		tmp[i] = l - rM.m_data[i];
 
-	matrix_t res(rM.m_rows, rM.m_cols, tmp);
+	matrix_t<T> res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
@@ -370,14 +377,14 @@ matrix_t<T> operator* (const T& l, const matrix_t<T>& rM) {
 	for (int i = 0; i < rM.m_elem; i++)
 		tmp[i] = l * rM.m_data[i];
 
-	matrix_t res(rM.m_rows, rM.m_cols, tmp);
+	matrix_t<T> res(rM.m_rows, rM.m_cols, tmp);
 	delete[] tmp;
 	return res;
 }
 
 template <class T>
 matrix_t<T> operator* (const matrix_t<T>& lM, const matrix_t<T>& rM) {
-	// if (lM.m_cols != rM.m_rows) std::cout << "matrix_t size multimplication error" << std::endl;
+	if (lM.m_cols != rM.m_rows) throw std::invalid_argument("Matrix_t and matrix_t size multimplication error");
 	int M = lM.m_rows, N = rM.m_cols, K = lM.m_cols;
 	T* tmp = new T[M * N];
 	for (int i = 0; i < M; i++) {
@@ -453,7 +460,7 @@ bool matrix_t<T>::join(const matrix_t<T>& M) {
 
 // Translate ij position in matrix into index of array
 template<class T>
-inline int matrix_t<T>::pos_to_ind(int row, int col) {
+inline int matrix_t<T>::pos_to_ind(int row, int col) const {
 	return (row < m_rows && row >= 0 && col < m_cols && col >= 0) ? row * m_cols + col : -1;
 }
 

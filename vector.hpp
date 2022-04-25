@@ -1,6 +1,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include "matrix.hpp"
+
 #include <iostream>
 #include <stdexcept>
 #include <iomanip>
@@ -14,7 +16,7 @@ public:
 	vector_t();
 	
 	// Zero constructor
-	vector_t(int n);
+	explicit vector_t(int n);
 
 	// Initializer list constructor
 	vector_t(std::initializer_list<T> cords, int n);
@@ -40,14 +42,14 @@ public:
 	// Destructor
 	~vector_t();
 
-	T get_cord(int n);
+	inline T get_cord(int n) const;
 
-	int get_dim();
+	inline int get_dim() const;
 
-	void set_cord(T value, int n);
+	inline void set_cord(T value, int n);
 
 	// v /= |v|
-	void normalised();
+	inline void normalised();
 
 
 	// Operator == overlaod for l-values
@@ -77,6 +79,7 @@ public:
 	// Operator *= overload for r-value coeficient
 	vector_t& operator *= (const T ratio);
 
+	// Operator /= overload for r-value coeficient
 	vector_t& operator /= (const T ratio);
 
 	// Vector sum overload
@@ -129,8 +132,8 @@ vector_t<T>::vector_t(std::initializer_list<T> cords, int n) {
 
 template<class T>
 vector_t<T>::vector_t(T* cords, int n) {
-	data = new T[n];
-	for (int i = 0; i < dim; i++)
+	data = std::vector<T>(n);
+	for (int i = 0; i < n; i++)
 		data[i] = cords[i];
 	dim = n;
 }
@@ -284,16 +287,34 @@ vector_t<T>& vector_t<T>::operator /= (const T ratio) {
 	return *this;
 }
 
+/*
+template<class T>
+vector_t<T>& vector_t<T>::operator * (const matrix_t<T> rM) {
+	if (rM.get_rows() != dim) throw std::invalid_argument("Matrix_t and vector_t size multimplication error");
+	int M = rM.get_rows(), N = rM.get_cols();
+	T* tmp = new T[M];
+	for (int i = 0; i < M; i++) {
+		T cur = data[i];
+		const T* a = m_data + i * N;
+		for (int j = 0; j < N; j++) {
+			tmp[j] += a[j] * da;
+		}
+	}
+	vector_t<T> res(tmp, M);
+	delete[] tmp;
+	return res;
+}
+*/
 //------------------------------------------------------------------
 //------------------------------------------------------------------
 
 template<class T>
-T vector_t<T>::get_cord(int n) {
+T vector_t<T>::get_cord(int n) const {
 	return data.at(n);
 } // Numeration starts with sero
 
 template<class T>
-int vector_t<T>::get_dim() {
+int vector_t<T>::get_dim() const {
 	return dim;
 }
 
