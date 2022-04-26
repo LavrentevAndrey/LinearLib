@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClInclude Include="marix_vector_multiplication.hpp" />
     <ClInclude Include="matrix.hpp" />
+    <ClInclude Include="SLE_solver.hpp" />
     <ClInclude Include="vector.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

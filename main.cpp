@@ -81,6 +81,13 @@ void test3() {
     std::cout << s << std::endl;
     std::cout << (s == s) << std::endl;
     std::cout << (s == v1) << std::endl;
+
+    std::cout << s.get_norm() << std::endl;
+    std::cout << s.norm() << std::endl;
+    s.normalise();
+    std::cout << s << std::endl;
+    std::cout << s.norm() << std::endl;
+
 }
 
 void test4() {
@@ -109,7 +116,7 @@ void test4() {
 }
 
 int main() {
-    test4();
+    test3();
 	return 0;
 }
 

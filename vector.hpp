@@ -1,8 +1,6 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include "matrix.hpp"
-
 #include <iostream>
 #include <stdexcept>
 #include <iomanip>
@@ -48,8 +46,12 @@ public:
 
 	inline void set_cord(T value, int n);
 
+	inline double norm() const;
+
 	// v /= |v|
-	inline void normalised();
+	inline void normalise();
+
+	inline vector_t<T> get_norm() const;
 
 
 	// Operator == overlaod for l-values
@@ -305,6 +307,7 @@ vector_t<T>& vector_t<T>::operator * (const matrix_t<T> rM) {
 	return res;
 }
 */
+
 //------------------------------------------------------------------
 //------------------------------------------------------------------
 
@@ -324,13 +327,28 @@ void vector_t<T>::set_cord(T value, int n) {
 } // Numeration starts with sero
 
 template<class T>
-void vector_t<T>::normalised() {
-	T sum = static_cast<T>(0.0);
+double vector_t<T>::norm() const {
+	double sum = 0.0;
 	for (T elem : data)
-		sum += elem * elem;
+		sum += static_cast<double>(elem * elem);
+	return sqrt(sum);
+}
 
-	if (sum != static_cast<T>(0.0))
-		this /= sqrt((double)sum);
+template<class T>
+void vector_t<T>::normalise() {
+	if (this->norm() != 0.0)
+		*this /= this->norm();
+}
+
+template<class T>
+vector_t<T> vector_t<T>::get_norm() const {
+	double div = static_cast<T>(this->norm());
+	if (div == 0.0)
+		return vector_t<T>(std::vector<T>(dim));
+	std::vector<T> out = data;
+	for (int i = 0; i < dim; i++)
+		out[i] /= div;
+	return vector_t<T>(out);
 }
 
 //------------------------------------------------------------------

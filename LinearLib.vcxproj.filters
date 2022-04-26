@@ -29,5 +29,8 @@
     <ClInclude Include="marix_vector_multiplication.hpp">
       <Filter>Файлы ресурсов</Filter>
     </ClInclude>
+    <ClInclude Include="SLE_solver.hpp">
+      <Filter>Файлы ресурсов</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
