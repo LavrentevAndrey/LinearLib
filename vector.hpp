@@ -289,25 +289,6 @@ vector_t<T>& vector_t<T>::operator /= (const T ratio) {
 	return *this;
 }
 
-/*
-template<class T>
-vector_t<T>& vector_t<T>::operator * (const matrix_t<T> rM) {
-	if (rM.get_rows() != dim) throw std::invalid_argument("Matrix_t and vector_t size multimplication error");
-	int M = rM.get_rows(), N = rM.get_cols();
-	T* tmp = new T[M];
-	for (int i = 0; i < M; i++) {
-		T cur = data[i];
-		const T* a = m_data + i * N;
-		for (int j = 0; j < N; j++) {
-			tmp[j] += a[j] * da;
-		}
-	}
-	vector_t<T> res(tmp, M);
-	delete[] tmp;
-	return res;
-}
-*/
-
 //------------------------------------------------------------------
 //------------------------------------------------------------------
 
