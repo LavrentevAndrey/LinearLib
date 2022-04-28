@@ -1,6 +1,7 @@
 #include "matrix.hpp"
 #include "vector.hpp"
 #include "marix_vector_multiplication.hpp"
+#include "SLE_solver.hpp"
 
 void test1() {
     double* A = new double[9];
@@ -115,8 +116,28 @@ void test4() {
     std::cout << v1 * Bm;
 }
 
+void test5() {
+    double* B = new double[5 * 5];
+    for (int i = 0; i < 5 * 5; i++)
+        B[i] = (double)(rand() % 10);
+    matrix_t<double> Bm = matrix_t<double>(5, 5, B);
+
+    std::cout << Bm << std::endl;
+    matrix_t<double> Am = Bm.row_echelon();
+    std::cout << Am << std::endl;
+
+    std::vector<double> vv1;
+    for (int i = 0; i < 5; i++)
+        vv1.push_back(rand() % 10);
+    vector_t<double> v1(vv1);
+    std::cout << v1 << std::endl;
+
+    vector_t<double> solution = sle_solver_NxN(Bm, v1);
+    std::cout << solution << std::endl;
+}
+
 int main() {
-    test3();
+    test5();
 	return 0;
 }
 

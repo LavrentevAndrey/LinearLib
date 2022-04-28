@@ -7,6 +7,8 @@
 #include <math.h>
 #include <vector>
 
+#include "vector.hpp"
+
 template <class T>
 class matrix_t {
 public:
@@ -51,6 +53,12 @@ public:
 
 	template <class U> friend std::ostream& operator<< (std::ostream& os, const matrix_t<U>& M);
 
+	// useful functions
+	inline bool is_square();
+	inline bool is_row_echelon();
+	bool separate(matrix_t* M1, matrix_t* M2, int col);
+	bool join(const matrix_t& M);
+
 	// computing inverse matrix
 	bool inverse();
 
@@ -58,15 +66,15 @@ public:
 	T determinant(matrix_t M);
 	T LU_determinant();
 
+	// returning row echelon form of matrix
+	matrix_t<T> row_echelon();
+
 private:
 	inline int pos_to_ind(int row, int col) const;
-	inline bool is_square();
 	inline bool close_enough(T n1, T n2);
 	inline void mult_row(int i, T coef); // i = i * coef
 	inline void mult_add_row(int i, int j, T coef); // i = i + j * coef
 	inline void swap_row(int i, int j);
-	bool separate(matrix_t* M1, matrix_t* M2, int col);
-	bool join(const matrix_t& M);
 	inline int find_row_with_max_element(int col, int start_row);
 	inline void print();
 
@@ -224,7 +232,7 @@ std::ostream& operator<< (std::ostream& os, matrix_t<T>& M) {
 	int m = M.get_rows(), n = M.get_cols();
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++)
-			os << M.get(i, j) << " ";
+			os << std::fixed << std::setprecision(3) << std::setw(6) << M.get(i, j) << " ";
 		os << std::endl;
 	}
 	os << std::endl;
@@ -474,6 +482,19 @@ inline bool matrix_t<T>::is_square() {
 	return m_cols == m_rows ? true : false;
 }
 
+template <class T>
+bool matrix_t<T>::is_row_echelon() {
+	int lol;
+	for (int i = 1; i < m_rows; ++i) {
+		lol = i * m_cols;
+		for (int j = 0; j < i; ++j) {
+			if (!close_enough(m_data[lol + j], 0.0))
+				return false;
+		}
+	}
+	return true;
+}
+
 template<class T>
 inline void matrix_t<T>::swap_row(int i, int j) {
 	T tmp;
@@ -543,7 +564,7 @@ bool matrix_t<T>::inverse() {
 	int cols = m_cols;
 	join(Ident);
 
-	this->print();
+	//this->print();
 
 	int cRow, cCol;
 	int rowWithMaxElem;
@@ -558,14 +579,14 @@ bool matrix_t<T>::inverse() {
 			rowWithMaxElem = this->find_row_with_max_element(cCol, cRow);
 			if (rowWithMaxElem != cRow) {
 				this->swap_row(rowWithMaxElem, cRow);
-				std::cout << "Swap rows: " << cRow << " and " << rowWithMaxElem << std::endl;
+				//std::cout << "Swap rows: " << cRow << " and " << rowWithMaxElem << std::endl;
 			}
 
 			T cValue = m_data[cRow * m_cols + cCol];
 			if (cValue != 1.0)
 				this->mult_row(cRow, (T)1 / cValue);
 
-			this->print();
+			//this->print();
 
 			for (int i = cRow + 1; i < m_rows; i++) {
 				if (!close_enough(m_data[i * m_cols + cCol], 0.0)) {
@@ -576,16 +597,16 @@ bool matrix_t<T>::inverse() {
 					if (!close_enough(rowOneValue, 0.0)) {
 						T correction = -(m_data[i * m_cols + cCol] / rowOneValue);
 
-						std::cout << "Multiply row: " << rowOneIndex << " by " << m_data[i * m_cols + cCol] << " and add to row " << i << std::endl;
+						//std::cout << "Multiply row: " << rowOneIndex << " by " << m_data[i * m_cols + cCol] << " and add to row " << i << std::endl;
 
 						this->mult_add_row(i, rowOneIndex, correction);
 
-						this->print();
+						//this->print();
 					}
 				}
 			}
 
-			this->print();
+			//this->print();
 
 			for (int i = cCol + 1; i < cols; i++) {
 				if (!close_enough(m_data[cRow * m_cols + i], 0.0)) {
@@ -596,16 +617,16 @@ bool matrix_t<T>::inverse() {
 					if (!close_enough(rowOneValue, 0.0)) {
 						T correction = -(m_data[cRow * m_cols + i] / rowOneValue);
 
-						std::cout << "Multiply row: " << rowOneIndex << " by " << m_data[i * m_cols + cCol] << " and add to row " << cRow << std::endl;
+						//std::cout << "Multiply row: " << rowOneIndex << " by " << m_data[i * m_cols + cCol] << " and add to row " << cRow << std::endl;
 
 						this->mult_add_row(cRow, rowOneIndex, correction);
 
-						this->print();
+						//this->print();
 					}
 				}
 			}
 
-			this->print();
+			//this->print();
 
 			flag = true;
 			for (int i = 0; i < m_rows; i++) {
@@ -705,6 +726,53 @@ T matrix_t<T>::LU_determinant() {
 	for (int i = 0; i < n; i++)
 		det *= U[i][i];
 	return det;
+}
+
+template <class T>
+matrix_t<T> matrix_t<T>::row_echelon() {
+	if (m_cols < m_rows)
+		throw std::invalid_argument("The matrix must have at least as many columns as rows.");
+
+	T* tmp;
+	tmp = new T[m_rows * m_cols];
+	for (int i = 0; i < (m_rows * m_cols); ++i)
+		tmp[i] = m_data[i];
+
+	int cRow, cCol;
+	int maxCount = 100;
+	int count = 0;
+	bool completeFlag = false;
+	while ((!completeFlag) && (count < maxCount)) {
+		for (int diagIndex = 0; diagIndex < m_rows; ++diagIndex) {
+			cRow = diagIndex;
+			cCol = diagIndex;
+
+			int maxIndex = find_row_with_max_element(cCol, cRow);
+
+			//this->print();
+
+			for (int i = cRow + 1; i < m_rows; ++i) {
+				if (!close_enough(m_data[pos_to_ind(i, cCol)], 0.0)) {
+					int rowOneIndex = cCol;
+					T rowOneValue = m_data[pos_to_ind(rowOneIndex, cCol)];
+					if (!close_enough(rowOneValue, 0.0)) {
+						T correctionFactor = -(m_data[pos_to_ind(i, cCol)] / rowOneValue);
+						mult_add_row(i, rowOneIndex, correctionFactor);
+					}
+					//this->print();
+				}
+			}
+		}
+		completeFlag = this->is_row_echelon();
+		count++;
+	}
+	//this->print();
+	matrix_t<T> out(m_rows, m_cols, m_data);
+	for (int i = 0; i < (m_rows * m_cols); ++i)
+		m_data[i] = tmp[i];
+	delete[] tmp;
+
+	return out;
 }
 
 #endif
