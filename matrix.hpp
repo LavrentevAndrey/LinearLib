@@ -748,6 +748,10 @@ matrix_t<T> matrix_t<T>::row_echelon() {
 			cCol = diagIndex;
 
 			int maxIndex = find_row_with_max_element(cCol, cRow);
+			if (maxIndex != cRow) {
+				this->swap_row(maxIndex, cRow);
+				//std::cout << "Swap rows: " << cRow << " and " << rowWithMaxElem << std::endl;
+			}
 
 			//this->print();
 
@@ -759,6 +763,7 @@ matrix_t<T> matrix_t<T>::row_echelon() {
 						T correctionFactor = -(m_data[pos_to_ind(i, cCol)] / rowOneValue);
 						mult_add_row(i, rowOneIndex, correctionFactor);
 					}
+					//std::cout << "Step " << i << std::endl;
 					//this->print();
 				}
 			}

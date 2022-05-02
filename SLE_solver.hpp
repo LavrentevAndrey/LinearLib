@@ -13,7 +13,7 @@ matrix_t<T> join_mv(matrix_t<T>& A, vector_t<T>& b) {
 	T* data = new T[M * (N + 1)];
 	T* row;
 	for (int i = 0; i < M; i++) {
-		row = data + i * N;
+		row = data + i * (N + 1);
 		for (int j = 0; j < N; j++)
 			row[j] = A.get(i, j);
 		row[N] = b.get_cord(i);
@@ -30,7 +30,6 @@ vector_t<T> sle_solver_NxN(matrix_t<T> A, vector_t<T> b) {
 		throw std::invalid_argument("Cant solve, there are more variables than equations");
 
 	matrix_t<T> partly_solved_sistem = (join_mv(A, b)).row_echelon();
-
 	std::cout << partly_solved_sistem << std::endl;
 	
 	vector_t<T> out(M);
