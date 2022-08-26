@@ -6,7 +6,6 @@
 #include <iomanip>
 #include <math.h>
 #include <vector>
-
 #include "vector.hpp"
 
 template <class T>
@@ -15,8 +14,9 @@ public:
 	matrix_t();
 	matrix_t(int rows, int cols);
 	matrix_t(int rows, int cols, const T* data);
-	matrix_t(const matrix_t& matrix);
-	matrix_t(int rows, int cols, const std::vector<T>* inputData);
+	matrix_t(const matrix_t<T>& matrix);
+	matrix_t(matrix_t<T>&& matrix);
+	matrix_t(int rows, int cols, const std::vector<T>* inputData) noexcept;
 
 	virtual ~matrix_t();
 
@@ -33,10 +33,11 @@ public:
 
 	// overloads of operators
 	bool operator== (const matrix_t<T>& M);
-	bool operator== (matrix_t<T>&& M);
+	bool operator== (const matrix_t<T>&& M);
 	bool compare(const matrix_t& M, double tolerance);
 
-	matrix_t& operator = (const matrix_t& M);
+	const matrix_t& operator = (const matrix_t& M);
+	const matrix_t& operator = (matrix_t<T>&& M);
 	
 	template <class U> friend matrix_t<U> operator + (const matrix_t<U>& lM, const matrix_t<U>& rM);
 	template <class U> friend matrix_t<U> operator + (const matrix_t<U>& lM, const U& r);
@@ -62,12 +63,15 @@ public:
 	// computing inverse matrix
 	bool inverse();
 
+	// Transposing matrix
+	void transpose();
+
 	// computing determinant
 	T determinant(matrix_t M);
 	T LU_determinant();
 
 	// returning row echelon form of matrix
-	matrix_t<T> row_echelon();
+	void row_echelon();
 
 private:
 	inline int pos_to_ind(int row, int col) const;
@@ -103,7 +107,7 @@ matrix_t<T>::matrix_t(int rows, int cols) {
 	m_elem = rows * cols;
 	m_data = new T[m_elem];
 	for (int i = 0; i < m_elem; i++) {
-		m_data[i] = 0.0;
+		m_data[i] = 0;
 	}
 }
 
@@ -121,7 +125,7 @@ matrix_t<T>::matrix_t(int rows, int cols, const T* data) {
 
 // Matrix from matrix
 template<class T>
-matrix_t<T>::matrix_t(const matrix_t& matrix) {
+matrix_t<T>::matrix_t(const matrix_t<T>& matrix) {
 	m_rows = matrix.m_rows;
 	m_cols = matrix.m_cols;
 	m_elem = matrix.m_elem;
@@ -131,9 +135,18 @@ matrix_t<T>::matrix_t(const matrix_t& matrix) {
 	}
 }
 
+template<class T>
+matrix_t<T>::matrix_t(matrix_t<T>&& matrix) {
+	m_rows = matrix.m_rows;
+	m_cols = matrix.m_cols;
+	m_elem = matrix.m_elem;
+	m_data = matrix.m_data;
+	matrix.m_data = nullptr;
+}
+
 // IHAAA VECTORS!!!
 template<class T>
-matrix_t<T>::matrix_t(int rows, int cols, const std::vector<T>*  data) {
+matrix_t<T>::matrix_t(int rows, int cols, const std::vector<T>*  data) noexcept {
 	//assert(data->size() >= cols * rows); // hmm the exception is asking for... but is it so nessesary?
 	m_rows = rows;
 	m_cols = cols;
@@ -228,7 +241,7 @@ T* matrix_t<T>::get_pointer() const {
 //------------------------------------------------------------------
 
 template<class T>
-std::ostream& operator<< (std::ostream& os, matrix_t<T>& M) {
+std::ostream& operator<< (std::ostream& os, const matrix_t<T>& M) {
 	int m = M.get_rows(), n = M.get_cols();
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++)
@@ -245,7 +258,7 @@ bool matrix_t<T>::operator== (const matrix_t<T>& M) {
 		return false;
 
 	for (int i = 0; i < this->m_elem; i++) {
-		if (close_enough(this->m_data[i], M.m_data[i])) {
+		if (!close_enough(this->m_data[i], M.m_data[i])) {
 			return false;
 		}
 	}
@@ -253,12 +266,12 @@ bool matrix_t<T>::operator== (const matrix_t<T>& M) {
 }
 
 template<class T>
-bool matrix_t<T>::operator== (matrix_t<T>&& M) {
+bool matrix_t<T>::operator== (const matrix_t<T>&& M) {
 	if (M.m_cols != this->m_cols || M.m_rows != this->m_rows)
 		return false;
 	
 	for (int i = 0; i < this->m_elem; i++) {
-		if (close_enough(this->m_data[i], M.m_data[i])) {
+		if (!close_enough(this->m_data[i], M.m_data[i])) {
 			return false;
 		}
 	}
@@ -282,14 +295,29 @@ bool matrix_t<T>::compare(const matrix_t<T> &M, double coef) {
 }
 
 template<class T>
-matrix_t<T>& matrix_t<T>::operator = (const matrix_t<T>& M) {
-	this->m_cols = M.m_cols;
-	this->m_rows = M.m_rows;
-	this->m_elem = M.m_elem;
-	this->m_data = new T[m_elem];
+const matrix_t<T>& matrix_t<T>::operator = (const matrix_t<T>& M) {
+	if (this == &M)
+            return *this;
+	m_cols = M.m_cols;
+	m_rows = M.m_rows;
+	m_elem = M.m_elem;
+	m_data = new T[m_elem];
 	for (int i = 0; i < m_elem; i++) {
 		m_data[i] = M.m_data[i];
 	}
+	return *this;
+}
+
+template<class T>
+const matrix_t<T>& matrix_t<T>::operator = (matrix_t<T>&& M) {
+	if (this == &M)
+            return *this;
+	delete[] m_data;
+	m_cols = M.m_cols;
+	m_rows = M.m_rows;
+	m_elem = M.m_elem;
+	m_data = M.m_data;
+	M.m_data = nullptr;
 	return *this;
 }
 
@@ -555,6 +583,33 @@ inline void matrix_t<T>::print() {
 //------------------------------------------------------------------
 
 template<class T>
+void matrix_t<T>::transpose() {
+	if (m_rows ==  m_cols) {
+		T tmp;
+		for (int i = 1; i < m_rows; i++) {
+			for (int j = 0; j < i; j++) {
+				tmp = m_data[i*m_cols + j];
+				m_data[i*m_cols + j] = m_data[j*m_rows + i];
+				m_data[j*m_rows + i] = tmp;
+			}
+		}
+	}
+	else {
+		int tmpi = m_rows;
+		T* buf = new T[m_rows * m_cols];
+		for (int i = 0; i < m_rows; i++) {
+			for (int j = 0; j < m_cols; j++) {
+				buf[j*m_rows + i] = m_data[i*m_cols + j];
+			}
+		}
+		delete[] m_data;
+		m_data = buf;
+		m_rows = m_cols;
+		m_cols = tmpi;
+	}
+}
+
+template<class T>
 bool matrix_t<T>::inverse() {
 	if (!this->is_square())
 		throw std::invalid_argument("Can't invert not square matrix!");
@@ -569,7 +624,7 @@ bool matrix_t<T>::inverse() {
 	int cRow, cCol;
 	int rowWithMaxElem;
 	int count = 0;
-	int maxIter = 100;
+	int maxIter = m_rows * 10;
 	bool flag = false, out = false;
 	while (count < maxIter && flag == false) {
 		for (int diagIndex = 0; diagIndex < m_rows; diagIndex++) {
@@ -643,7 +698,6 @@ bool matrix_t<T>::inverse() {
 				for (int i = 0; i < m_rows; i++)
 					for (int j = 0; j < cols; j++)
 						L[i * cols + j] = m_data[i * m_cols + cols + j];
-				delete[] L;
 
 				m_cols = cols;
 				m_elem = cols * m_rows;
@@ -651,6 +705,7 @@ bool matrix_t<T>::inverse() {
 				m_data = new T[m_elem];
 				for (int i = 0; i < m_elem; i++)
 					m_data[i] = L[i];
+				delete[] L;
 				break;
 			}
 		}
@@ -660,7 +715,7 @@ bool matrix_t<T>::inverse() {
 }
 
 template<class T>
-T matrix_t<T>::determinant(matrix_t M) {
+T matrix_t<T>::determinant(const matrix_t<T> M) {
 	if (M.m_cols == 2)
 		return M.m_data[0] * M.m_data[3] - M.m_data[1] * M.m_data[2];
 	int cols = M.m_cols, rowSmal, row;
@@ -729,17 +784,12 @@ T matrix_t<T>::LU_determinant() {
 }
 
 template <class T>
-matrix_t<T> matrix_t<T>::row_echelon() {
+void matrix_t<T>::row_echelon() {
 	if (m_cols < m_rows)
 		throw std::invalid_argument("The matrix must have at least as many columns as rows.");
 
-	T* tmp;
-	tmp = new T[m_rows * m_cols];
-	for (int i = 0; i < (m_rows * m_cols); ++i)
-		tmp[i] = m_data[i];
-
 	int cRow, cCol;
-	int maxCount = 100;
+	int maxCount = m_cols * 10;
 	int count = 0;
 	bool completeFlag = false;
 	while ((!completeFlag) && (count < maxCount)) {
@@ -748,10 +798,10 @@ matrix_t<T> matrix_t<T>::row_echelon() {
 			cCol = diagIndex;
 
 			int maxIndex = find_row_with_max_element(cCol, cRow);
-			if (maxIndex != cRow) {
-				this->swap_row(maxIndex, cRow);
-				//std::cout << "Swap rows: " << cRow << " and " << rowWithMaxElem << std::endl;
-			}
+			// if (maxIndex != cRow) {
+			// 	this->swap_row(maxIndex, cRow);
+			// 	//std::cout << "Swap rows: " << cRow << " and " << rowWithMaxElem << std::endl;
+			//  }
 
 			//this->print();
 
@@ -771,13 +821,7 @@ matrix_t<T> matrix_t<T>::row_echelon() {
 		completeFlag = this->is_row_echelon();
 		count++;
 	}
-	//this->print();
-	matrix_t<T> out(m_rows, m_cols, m_data);
-	for (int i = 0; i < (m_rows * m_cols); ++i)
-		m_data[i] = tmp[i];
-	delete[] tmp;
-
-	return out;
+	// this->print();
 }
 
 #endif
