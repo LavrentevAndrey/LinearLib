@@ -1,12 +1,12 @@
-#include <gtest/gtest.h>
-
+// #include <gtest/gtest.h>
 #include "matrix.hpp"
 #include "vector.hpp"
 #include "marix_vector_multiplication.hpp"
 #include "SLE_solver.hpp"
+#include "assert.h"
 
 void test1() {
-    double A[9], B[9], C[9];
+    double A[9], B[9];
     for (int i = 0; i < 9; i++)
         A[i] = (double)(rand() % 30);
     for (int i = 0; i < 9; i++)
@@ -143,7 +143,8 @@ void test5() {
 
     std::cout <<"Matrix x vector: \n" <<  Am * v2 << std::endl;
 
-    vector_t<double> solution = sle_solver_NxN(Am, v1);
+    vector_t<double> solution(vv2);
+    sle_solver_NxN(Am, v1, solution);
     std::cout << "Solution of matrix: \n" << solution << std::endl;
 
     double v[] = { 2, 1, -1, -1, 3, -1, 4, 2, -3 };
@@ -152,16 +153,30 @@ void test5() {
     //std::cout << M << std::endl;
     std::vector<double> vv3 = { 1, 2, 3};
     vector_t<double> v3(vv3);
-    vector_t<double> solution1 = sle_solver_NxN(M, v3);
+    sle_solver_NxN(M, v3, solution);
+    std::cout << solution << std::endl;
+    vector_t<double> sol({-1.0/7, 2.0/7, -1.0}, 3);
+}
+
+void test6() {
+    double v[] = { 2, 1, -1, -1, 3, -1, 4, 2, -3 };
+    matrix_t<double> M = matrix_t<double>(3, 3, v);
+    //std::cout << M << std::endl;
+    std::vector<double> vv3 = { 1, 2, 3};
+    vector_t<double> v3(vv3);
+    std::cout << "The rank is: " << M.get_rank() << std::endl;
+    vector_t<double> solution1;
+    sle_solver_NxN(M, v3, solution1);
     std::cout << solution1 << std::endl;
     vector_t<double> sol({-1.0/7, 2.0/7, -1.0}, 3);
     assert(sol == solution1);
 }
 
-int main(int argc, char* argv[]) {
+
+int main() {
     // testing::InitGoogleTest(&argc, argv);
 	// return RUN_ALL_TESTS();
-    test5();
+    test6();
     return 0;
 }
 

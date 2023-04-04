@@ -73,9 +73,11 @@ public:
 	// returning row echelon form of matrix
 	void row_echelon();
 
+	int get_rank() const;
+
 private:
 	inline int pos_to_ind(int row, int col) const;
-	inline bool close_enough(T n1, T n2);
+	inline bool close_enough(T n1, T n2) const;
 	inline void mult_row(int i, T coef); // i = i * coef
 	inline void mult_add_row(int i, int j, T coef); // i = i + j * coef
 	inline void swap_row(int i, int j);
@@ -162,6 +164,7 @@ template<class T>
 matrix_t<T>::~matrix_t() {
 	if (m_data != nullptr)
 		delete[] m_data;
+	m_data = nullptr;
 }
 
 //------------------------------------------------------------------
@@ -501,7 +504,7 @@ inline int matrix_t<T>::pos_to_ind(int row, int col) const {
 }
 
 template<class T>
-inline bool matrix_t<T>::close_enough(T n1, T n2) {
+inline bool matrix_t<T>::close_enough(T n1, T n2) const {
 	return fabs(n1 - n2) < 1e-9;
 }
 
@@ -777,7 +780,7 @@ T matrix_t<T>::LU_determinant() {
 				U[i][j] = U[i][j] - L[i][k - 1] * U[k - 1][j];
 	}
 
-	T det = 1.0;
+	T det = (T)1.0;
 	for (int i = 0; i < n; i++)
 		det *= U[i][i];
 	return det;
@@ -789,21 +792,26 @@ void matrix_t<T>::row_echelon() {
 		throw std::invalid_argument("The matrix must have at least as many columns as rows.");
 
 	int cRow, cCol;
-	int maxCount = m_cols * 10;
+	int maxCount = m_cols	;
 	int count = 0;
 	bool completeFlag = false;
 	while ((!completeFlag) && (count < maxCount)) {
-		for (int diagIndex = 0; diagIndex < m_rows; ++diagIndex) {
+		for (int diagIndex = 0; diagIndex < m_rows; diagIndex++) {
 			cRow = diagIndex;
 			cCol = diagIndex;
 
-			int maxIndex = find_row_with_max_element(cCol, cRow);
-			// if (maxIndex != cRow) {
-			// 	this->swap_row(maxIndex, cRow);
-			// 	//std::cout << "Swap rows: " << cRow << " and " << rowWithMaxElem << std::endl;
-			//  }
-
-			//this->print();
+			// std::cout << "Row: " << m_data[diagIndex * m_cols + diagIndex] << " " << diagIndex << std::endl;
+			// this->print();
+			if (m_data[diagIndex * m_cols + diagIndex] == 0) {
+				for (int i = cRow + 1; i < m_rows; i++) {
+					if (!close_enough(m_data[i * m_cols + cCol], 0)) {
+						// std::cout << "Swap rows: " << cRow << " and " << i << std::endl;
+						this->swap_row(i, cRow);
+						// this->print();
+						break;
+					}
+				}
+			}
 
 			for (int i = cRow + 1; i < m_rows; ++i) {
 				if (!close_enough(m_data[pos_to_ind(i, cCol)], 0.0)) {
@@ -820,8 +828,38 @@ void matrix_t<T>::row_echelon() {
 		}
 		completeFlag = this->is_row_echelon();
 		count++;
+		// std::cout << count << std::endl;
 	}
 	// this->print();
+}
+
+template<class T>
+int matrix_t<T>::get_rank() const {
+	int rank = std::max(m_cols,m_rows), size = m_cols * m_rows;
+	std::vector<bool> line_used (m_rows);
+	T *data = new T[size];
+	for (int i = 0; i < size; i++)
+		data[i] = m_data[i];
+
+	for (int i = m_cols - 1; i >= 0; i--) {
+		int j;
+		for (j = 0; j < m_rows; j++)
+			if (!line_used[j] && !close_enough(data[j*m_cols + i], 0.0))
+				break;
+		if (j == m_rows)
+			rank--;
+		else {
+			line_used[j] = true;
+			for (int p = i - 1; p >= 0; p--)
+			 	data[j*m_cols + p] /= data[j*m_cols + i];
+			for (int k = m_rows - 1; k >= 0; k--)
+				if (k != j && !close_enough(data[k*m_cols + i], 0.0))
+					for (int p = i - 1; p >= 0; p--)
+						data[k*m_cols + p] -= data[j*m_cols + p] * data[k*m_cols + i];
+		}
+	}
+	delete[] data;
+	return rank;
 }
 
 #endif

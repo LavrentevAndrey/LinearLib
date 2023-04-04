@@ -4,6 +4,9 @@
 #include "matrix.hpp"
 #include "vector.hpp"
 
+constexpr int INFINITE_SOLVES = -1;
+constexpr int NO_SOLVES = -2;
+
 template<class T>
 matrix_t<T> join_mv(const matrix_t<T>& A, const vector_t<T>& b) {
 	int M = A.get_rows(), N = A.get_cols();
@@ -25,13 +28,19 @@ matrix_t<T> join_mv(const matrix_t<T>& A, const vector_t<T>& b) {
 }
 
 template<class T>
-vector_t<T> sle_solver_NxN(const matrix_t<T> A, const vector_t<T> b) {
+int sle_solver_NxN(const matrix_t<T> A, const vector_t<T> b, vector_t<T> &result) {
 	int M = A.get_rows(), N = A.get_cols();
 	if (M != N || b.get_dim() != M)
 		throw std::invalid_argument("Cant solve, there are more variables than equations");
 	matrix_t<T> partly_solved_sistem(join_mv(A, b));
 	// std::cout << std::endl << partly_solved_sistem << std::endl;
 	partly_solved_sistem.row_echelon();
+	int big_rank = partly_solved_sistem.get_rank(), small_rank = A.get_rank();
+	if ((big_rank == small_rank) && (small_rank < M)) {
+		return INFINITE_SOLVES; 
+	} else if (big_rank != small_rank) {
+		return NO_SOLVES;
+	}
 	// std::cout << std::endl << partly_solved_sistem << std::endl;
 	
 	vector_t<T> out(M);
@@ -57,8 +66,9 @@ vector_t<T> sle_solver_NxN(const matrix_t<T> A, const vector_t<T> b) {
 			out.set_cord(sum / partly_solved_sistem.get(i, i), i);
 		}
 	}
-
-	return out;
+	
+	result = out;
+	return 1;
 }
 
 #endif // SLE_SOLVER
