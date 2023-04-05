@@ -155,7 +155,6 @@ vector_t<T>::vector_t(vector_t& object) {
 template<class T>
 vector_t<T>::vector_t(vector_t&& object) noexcept { //noexcept - for calm type casting
 	data = object.data;
-	object.data = nullptr;
 	dim = object.dim;
 }
 
@@ -169,7 +168,6 @@ vector_t<T>& vector_t<T>::operator = (vector_t& object) {
 template<class T>
 vector_t<T>& vector_t<T>::operator = (vector_t&& object) noexcept { //noexcept - for calm type casting
 	data = object.data;
-	object.data = nullptr;
 	dim = object.dim;
 	return *this;
 }

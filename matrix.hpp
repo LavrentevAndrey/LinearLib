@@ -16,7 +16,7 @@ public:
 	matrix_t(int rows, int cols, const T* data);
 	matrix_t(const matrix_t<T>& matrix);
 	matrix_t(matrix_t<T>&& matrix);
-	matrix_t(int rows, int cols, const std::vector<T>* inputData) noexcept;
+	matrix_t(int rows, int cols, std::vector<T> &inputData) noexcept;
 
 	virtual ~matrix_t();
 
@@ -148,14 +148,14 @@ matrix_t<T>::matrix_t(matrix_t<T>&& matrix) {
 
 // IHAAA VECTORS!!!
 template<class T>
-matrix_t<T>::matrix_t(int rows, int cols, const std::vector<T>*  data) noexcept {
+matrix_t<T>::matrix_t(int rows, int cols, std::vector<T> &data) noexcept {
 	//assert(data->size() >= cols * rows); // hmm the exception is asking for... but is it so nessesary?
 	m_rows = rows;
 	m_cols = cols;
 	m_elem = rows * cols;
 	m_data = new T[m_elem];
 	for (int i = 0; i < m_elem; i++) {
-		m_data[i] = data->at(i);
+		m_data[i] = data.at(i);
 	} 
 }
 

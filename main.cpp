@@ -3,7 +3,11 @@
 #include "vector.hpp"
 #include "marix_vector_multiplication.hpp"
 #include "SLE_solver.hpp"
+#include "linear_regression.hpp"
+#include <sciplot/sciplot.hpp>
 #include "assert.h"
+#include <iomanip>
+#include <random>
 
 void test1() {
     double A[9], B[9];
@@ -170,13 +174,54 @@ void test6() {
     std::cout << solution1 << std::endl;
     vector_t<double> sol({-1.0/7, 2.0/7, -1.0}, 3);
     assert(sol == solution1);
+    std::cout << join_mv(v3, M) << std::endl;
+}
+
+void test7() {
+    std::random_device myRandomDevice;
+  	std::mt19937 myRandomGenerator(myRandomDevice());
+	std::uniform_real_distribution<double> myDistribution(-1.0, 1.0);
+    int numPoints = 1000;
+	double m = 1.5;
+	double c = 0.5;
+	double xMax = 10.0;
+	double xStep = xMax / static_cast<double>(numPoints);
+    std::vector<double> v, v_y;
+    int count = 0;
+	for (double x = 0.0; count < numPoints; x += xStep, count++) {
+	  	double randomNumber = myDistribution(myRandomGenerator);
+	  	v.push_back(x);
+	  	v_y.push_back(m * x + c + randomNumber);
+	}
+    matrix_t<double> X(numPoints, 1, v);
+    //std::cout << M << std::endl;
+    vector_t<double> y(v_y);
+    vector_t<double> solution1;
+    // std::cout << X.get_cols() << " " << X.get_rows() << " " << y.get_dim() << std::endl;
+    linear_regression(X, y, solution1);
+    std::cout << "OUR SOL: " << solution1 << std::endl;
+    sciplot::Plot2D plot;
+    plot.xlabel("x");
+    plot.ylabel("y");
+    plot.legend().atOutsideBottom().displayHorizontal().displayExpandWidthBy(2);
+    plot.drawDots(v, v_y).label("Set").lineWidth(10);
+    std::vector<double> x1 = {0, xMax}, y1(2);
+    y1[0] = solution1.get_cord(1) * x1[0] + solution1.get_cord(0);
+    y1[1] = solution1.get_cord(1) * x1[1] + solution1.get_cord(0);
+    plot.drawCurve(x1, y1).label("Result").lineWidth(4);
+    plot.grid().lineWidth(2).show();
+    sciplot::Figure figure = {{ plot }};
+    sciplot::Canvas canvas = {{ figure }};
+    canvas.size(1500, 1000);
+    canvas.show();
+    // canvas.save("planets1.png");
 }
 
 
 int main() {
     // testing::InitGoogleTest(&argc, argv);
 	// return RUN_ALL_TESTS();
-    test6();
+    test7();
     return 0;
 }
 
