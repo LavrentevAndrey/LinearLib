@@ -180,7 +180,7 @@ void test6() {
 void test7() {
     std::random_device myRandomDevice;
   	std::mt19937 myRandomGenerator(myRandomDevice());
-	std::uniform_real_distribution<double> myDistribution(-1.0, 1.0);
+	std::uniform_real_distribution<double> myDistribution(-3.0, 3.0);
     int numPoints = 1000;
 	double m = 1.5;
 	double c = 0.5;
@@ -206,8 +206,8 @@ void test7() {
     plot.legend().atOutsideBottom().displayHorizontal().displayExpandWidthBy(2);
     plot.drawDots(v, v_y).label("Set").lineWidth(10);
     std::vector<double> x1 = {0, xMax}, y1(2);
-    y1[0] = solution1.get_cord(1) * x1[0] + solution1.get_cord(0);
-    y1[1] = solution1.get_cord(1) * x1[1] + solution1.get_cord(0);
+    y1[0] = solution1(1) * x1[0] + solution1(0);
+    y1[1] = solution1(1) * x1[1] + solution1(0);
     plot.drawCurve(x1, y1).label("Result").lineWidth(4);
     plot.grid().lineWidth(2).show();
     sciplot::Figure figure = {{ plot }};
@@ -217,11 +217,30 @@ void test7() {
     // canvas.save("planets1.png");
 }
 
+void test8() {
+    double B[5 * 5];
+    for (int i = 0; i < 5 * 5; i++)
+        B[i] = (double)(rand() % 10);
+    B[10] = 17;
+    matrix_t<double> Bm = matrix_t<double>(5, 5, B);
+    std::cout << "Initial matrix:\n" << Bm << std::endl;
+    matrix_t<double> Q(5, 5), R(5, 5);
+    Bm.QR_decomposition(Q, R);
+    std::cout << "Q:\n" << Q << std::endl << "R:\n" << R << std::endl;
+}
+
 
 int main() {
     // testing::InitGoogleTest(&argc, argv);
 	// return RUN_ALL_TESTS();
-    test7();
+    // test1();
+    // test2();
+    // test3();
+    // test4();
+    // test5();
+    // test6();
+    // test7();
+    test8();
     return 0;
 }
 

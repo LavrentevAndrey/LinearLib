@@ -17,6 +17,8 @@ public:
 	matrix_t(const matrix_t<T>& matrix);
 	matrix_t(matrix_t<T>&& matrix);
 	matrix_t(int rows, int cols, std::vector<T> &inputData) noexcept;
+	matrix_t(const vector_t<T>& first, const vector_t<T>& second);
+	matrix_t(vector_t<T>& n); // Householder matrix from plane normal vector
 
 	virtual ~matrix_t();
 
@@ -59,6 +61,7 @@ public:
 	inline bool is_row_echelon();
 	bool separate(matrix_t* M1, matrix_t* M2, int col);
 	bool join(const matrix_t& M);
+	bool QR_decomposition(matrix_t& Q, matrix_t& R);
 
 	// computing inverse matrix
 	bool inverse();
@@ -157,6 +160,45 @@ matrix_t<T>::matrix_t(int rows, int cols, std::vector<T> &data) noexcept {
 	for (int i = 0; i < m_elem; i++) {
 		m_data[i] = data.at(i);
 	} 
+}
+
+// Matrix from multiplying of two vectors
+template<class T>
+matrix_t<T>::matrix_t(const vector_t<T>& first, const vector_t<T>& second) {
+	m_rows = first.get_dim();
+	m_cols = second.get_dim();
+	m_elem = m_rows * m_cols;
+	m_data = new T[m_elem];
+	T tmp;
+	int offset;
+	for (int i = 0; i < m_rows; i++) {
+		tmp = first(i);
+		offset = i * m_cols;
+		for (int j = 0; j < m_cols; j++)
+			m_data[offset + j] = tmp * second(j);
+	}
+}
+
+// Householder matrix from plane normal vector
+template<class T>
+matrix_t<T>::matrix_t(vector_t<T>& n) {
+	m_rows = n.get_dim();
+	m_cols = m_rows;
+	m_elem = m_rows * m_rows;
+	m_data = new T[m_elem];
+	T zero = static_cast<T>(0.0);
+	for (int i = 0; i < m_elem; i++)
+		m_data[i] = zero; 
+	for (int i = 0; i < m_rows; i++)
+		m_data[(m_rows + 1) * i] = 1;
+	T tmp;
+	int offset;
+	for (int i = 0; i < m_rows; i++) {
+		tmp = n(i);
+		offset = i * m_cols;
+		for (int j = 0; j < m_cols; j++)
+			m_data[offset + j] -= 2 * tmp * n(j);
+	}
 }
 
 // KILL 'EM ALL!!!
@@ -495,6 +537,91 @@ bool matrix_t<T>::join(const matrix_t<T>& M) {
 	m_data = M_data;
 
 	return true;
+}
+
+//Naive version of QR decompositions using Householder reflections
+template<class T>
+bool matrix_t<T>::QR_decomposition(matrix_t& Q, matrix_t& R) {
+	// Verify that the input matrix is square.
+	if (m_cols != m_rows)
+		return 1;
+	// Make a copy of the input matrix.
+	matrix_t<T> inputMatrix(m_rows, m_cols, m_data);
+	
+	// Create a vector to store the P matrices for each column.
+	std::vector<matrix_t<T>> Plist;
+	
+	// Loop through each column.
+	for (int j = 0; j < (m_cols - 1); j++)
+	{
+		// Create the a1 and b1 vectors.
+		// a1 is the column vector from A.
+		// b1 is the vector onto which we wish to reflect a1.
+		vector_t<T> a1 (m_cols - j);
+		vector_t<T> b1 (m_cols - j);
+		for (int i = j; i < m_cols; i++) {
+			a1(i - j) = inputMatrix.get(i,j);
+			b1(i - j) = static_cast<T>(0.0);
+		}
+		b1(0) = static_cast<T>(1.0);
+		
+		// Compute the norm of the a1 vector.
+		T a1norm = a1.norm();
+		
+		// Compute the sign we will use.
+		int sgn = -1;
+		if (a1(0) < static_cast<T>(0.0))
+			sgn = 1;
+			
+		// Compute the u-vector.
+		vector_t<T> u = a1 - (sgn * a1norm) * b1;
+		
+		// Compute the n-vector
+		u.normalise();
+		vector_t<T> n(std::move(u)); 
+		
+		// Compute Ptemp.
+		matrix_t<T> Ptemp(n);
+
+		// Form the P matrix with the original dimensions.
+		matrix_t<T> P (m_cols, m_cols);
+		P.set_to_identity();
+		for (int row = j; row < m_cols; row++) {
+			for (int col = j; col < m_cols; col++) {
+				P.set(row, col, Ptemp.get(row-j, col-j));
+			}
+		}	
+		
+		// Store the result into the Plist vector.
+		Plist.push_back(P);
+		
+		// Apply this transform matrix to inputMatrix and use this result
+		// next time through the loop.
+		inputMatrix = P * inputMatrix;
+	}
+	
+	// Compute Q.
+	matrix_t<T> Qmat = Plist.at(0);
+	for (int i = 1; i < (m_cols - 1); i++) {
+		Plist.at(i).transpose();
+		Qmat = Qmat * Plist.at(i);
+	}
+	
+	// Return the Q matrix.
+	Q = std::move(Qmat);
+	
+	// Compute R.
+	int numElements = Plist.size();
+	matrix_t<T> Rmat = Plist.at(numElements-1);
+	for (int i=(numElements-2); i>=0; --i)
+	{
+		Rmat = Rmat * Plist.at(i);
+	}
+	Rmat = Rmat * (*this);
+	
+	// And return the R matrix.
+	R = std::move(Rmat);
+	return 0;
 }
 
 // Translate ij position in matrix into index of array

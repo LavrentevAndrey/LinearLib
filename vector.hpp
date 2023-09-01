@@ -53,7 +53,6 @@ public:
 
 	inline vector_t<T> get_norm() const;
 
-
 	// Operator == overlaod for l-values
 	bool operator == (vector_t<T>& object);
 
@@ -89,12 +88,18 @@ public:
 
 	// Vector minus overload
 	template<class U> friend vector_t<U> operator - (vector_t<U> lhs, vector_t<U> rhs);
+	
+	// Multiplication by value
+	template<class U> friend vector_t<U> operator * (U val, vector_t<U> v);
 
 	// Dot product overload
 	template<class U> friend U operator * (vector_t<U> lv, vector_t<U> rv);
 
 	// Vector product overload
 	template<class U> friend vector_t<U> operator % (vector_t<U> lhs, vector_t<U> rhs);
+
+	// non-const () operator
+	inline T& operator ()(int n) noexcept;
 
 	// Out overload
 	template <class U> friend std::ostream& operator<< (std::ostream& os, const vector_t<U>& M);
@@ -365,12 +370,12 @@ vector_t<T> operator - (vector_t<T> lv, vector_t<T> rv) {
 	return vector_t<T>(out);
 }
 
+// Multiplication by value
 template<class T>
-vector_t<T> operator * (vector_t<T> lv, const T value) {
-	std::vector<T> out;
-	for (T elem : lv.data) {
-		out.push_back(elem * value);
-	}
+vector_t<T> operator * (T val, vector_t<T> v) {
+	vector_t<T> out(v.dim);
+	for (int i = 0; i < out.dim; i++)
+		out(i) = v(i) * val;
 	return out;
 }
 
@@ -398,6 +403,11 @@ vector_t<T> operator % (vector_t<T> lhs, vector_t<T> rhs) {
 	}
 	else
 		throw std::invalid_argument("Unavailable option, if you want cross product of dimensions different from 3, you need another function!");
+}
+
+template<class T>
+inline T& vector_t<T>::operator ()(int n) noexcept {
+	return data[n];
 }
 
 template<class T>
